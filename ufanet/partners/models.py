@@ -41,7 +41,7 @@ class Offer(models.Model):
     EndDate = models.DateField()
 
     def __str__(self):
-        return f'{self.PartnerID.Title} - {self.CityID} - {self.CategoryID.Title} - {self.WhatAboutOffer}'
+        return f'{self.PartnerID.Title} - {self.CityID} - {self.WhatAboutOffer}'
 
 
 class Tag(models.Model):
