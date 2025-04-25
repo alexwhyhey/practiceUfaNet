@@ -1,67 +1,91 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class Category(models.Model):
-    Title = models.CharField(max_length=100)
-    Logo = models.ImageField(default='')
+    title = models.CharField(max_length=100, unique=True)
+    logo = models.ImageField(blank=True, null=True, upload_to='categories/%Y/')
+
+    class Meta:
+        ordering = ['title']
+        verbose_name_plural = 'Categories'
 
     def __str__(self):
-        return self.Title
+        return self.title
 
 
 class City(models.Model):
-    Name = models.CharField(max_length=100)
-    Country = models.CharField(max_length=100)
-    Region = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    region = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'Cities'
+        ordering = ['country', 'name']
 
     def __str__(self):
-        return f'{self.Country}, г. {self.Name} - {self.Region}'
+        return f'{self.country}, г. {self.name}{f' ({self.region})' if self.region else ''}'
 
 
 class Partner(models.Model):
-    Title = models.CharField(max_length=150)
-    Logo = models.ImageField(default='')
-    About = models.TextField()
+    title = models.CharField(max_length=150, unique=True)
+    logo = models.ImageField(blank=True, null=True, upload_to='partners/logos/%Y/%m/')
+    about = models.TextField(max_length=600)
+
+    class Meta:
+        ordering = ['title']
 
     def __str__(self):
-        return self.Title
+        return self.title
 
 
 class Offer(models.Model):
-    PartnerID = models.ForeignKey(Partner, on_delete=models.CASCADE)
-    CityID = models.ForeignKey(City, on_delete=models.CASCADE)
-    ButtonName = models.CharField(max_length=30)
-    Url = models.URLField(default='')
-    WhatAboutOffer = models.TextField()
-    WhereToUse = models.TextField()
-    BackPhoto = models.ImageField(default='')
-    HowToGet = models.TextField()
-    StartDate = models.DateField()
-    EndDate = models.DateField()
+    partner = models.ForeignKey(Partner, on_delete=models.CASCADE, related_name='offers')
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name='offers')
+    button_name = models.CharField(max_length=30)
+    url = models.URLField()
+    what_offer_about = models.TextField(max_length=100)
+    where_to_use = models.TextField(max_length=100)
+    back_image = models.ImageField(blank=True, null=True, upload_to='offers/background/%Y/')
+    how_to_get = models.TextField(max_length=500)
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def clean(self):
+        if self.start_date and self.end_date and self.start_date >= self.end_date:
+            raise ValidationError('End date must be after start date.')
 
     def __str__(self):
-        return f'{self.PartnerID.Title} - {self.CityID} - {self.WhatAboutOffer}'
+        return f'{self.partner.title} - {self.city} - {self.what_offer_about}'
 
 
 class Tag(models.Model):
-    Name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
-        return self.Name
+        return self.name
 
 
 class OfferTag(models.Model):
-    OfferID = models.ForeignKey(Offer, on_delete=models.CASCADE)
-    TagID = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['offer', 'tag']
 
     def __str__(self):
-        return f'{self.OfferID.WhatAboutOffer}: {self.OfferID.WhereToUse} - {self.TagID}'
+        return f'{self.offer.what_offer_about}: {self.offer.where_to_use} - {self.tag}'
 
 
 class CategoryTag(models.Model):
-    CategoryID = models.ForeignKey(Category, on_delete=models.CASCADE)
-    TagID = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['category', 'tag']
 
     def __str__(self):
-        return f'{self.CategoryID.Title} - {self.TagID}'
+        return f'{self.category.title} - {self.tag}'
