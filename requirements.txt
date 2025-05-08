@@ -3,3 +3,5 @@ psycopg2-binary
 whitenoise
 djangorestframework
 Pillow
+djangorestframework-simplejwt
+python-dotenv

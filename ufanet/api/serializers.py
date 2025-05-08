@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import *
-from django.core.validators import FileExtensionValidator, RegexValidator
+from partners.models import *
+from django.core.validators import FileExtensionValidator
 
 class CategorySerializer(serializers.ModelSerializer):
     logo = serializers.ImageField(
@@ -21,6 +21,11 @@ class CategorySerializer(serializers.ModelSerializer):
         if file and file.size > 2 * 1024 * 1024:
             raise serializers.ValidationError("Image too large")
         return file
+    
+    def get_logo(self, obj):
+        if obj.logo:
+            return obj.logo.url  # Вернет относительный путь типа /media/categories/...
+        return None
 
 class CitySerializer(serializers.ModelSerializer):
     region = serializers.CharField(
