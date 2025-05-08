@@ -53,7 +53,7 @@ class PartnerSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Category
+        model = Partner
         fields = ['id', 'title', 'logo', 'about']
         read_only_fields = ['id']
 
@@ -65,10 +65,16 @@ class PartnerSerializer(serializers.ModelSerializer):
 
 class OfferSerializer(serializers.ModelSerializer):
     partner = PartnerSerializer(read_only=True)
+    city = CitySerializer(read_only=True)
 
     partner_id = serializers.PrimaryKeyRelatedField(
         queryset=Partner.objects.all(),
         source='partner',
+        write_only=True  
+    )
+    city_id = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.all(),
+        source='city',
         write_only=True  
     )
     
@@ -83,8 +89,8 @@ class OfferSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Category
-        fields = ['id', 'partner', 'partner_id', 'city', 'button_name', 'url', 'what_offer_about', 'where_to_use', 'back_image', 'how_to_get', 'start_date', 'end_date']
+        model = Offer
+        fields = ['id', 'partner', 'partner_id', 'city', 'city_id', 'button_name', 'url', 'what_offer_about', 'where_to_use', 'back_image', 'how_to_get', 'start_date', 'end_date']
         read_only_fields = ['id']
 
     def validate_logo(self, file):
@@ -117,11 +123,11 @@ class OfferTagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OfferTag
-        fields = ['id', 'offer', 'tag']
+        fields = ['id', 'offer', 'offer_id', 'tag', 'tag_id']
         read_only_fields = ['id']
 
 
-class CategoryTagSerialzier(serializers.ModelSerializer):
+class CategoryTagSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     tag = TagSerializer(read_only=True)
 
