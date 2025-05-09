@@ -12,7 +12,7 @@ load_dotenv(BASE_DIR / '../.env')
 SECRET_KEY = getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = getenv('DEBUG') == '1'
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -122,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 STATIC_ROOT = BASE_DIR / 'productionfiles'
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'mystaticfiles',
@@ -130,7 +130,7 @@ STATICFILES_DIRS = [
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
