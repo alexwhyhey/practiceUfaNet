@@ -7,7 +7,7 @@ class Category(models.Model):
     logo = models.ImageField(blank=True, null=True, upload_to='categories/%Y/')
 
     class Meta:
-        ordering = ['title']
+        ordering = ['id']
         verbose_name_plural = 'Categories'
 
     def __str__(self):

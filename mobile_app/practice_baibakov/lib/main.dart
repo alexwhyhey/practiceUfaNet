@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:practice_baibakov/auth/auth.dart';
@@ -129,10 +131,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
 // --------------------------- LIST OF OFFERS ---------------------------------
 
-class CategoriesList extends StatelessWidget {
+class CategoriesList extends StatefulWidget {
   const CategoriesList({super.key, required this.categories});
 
   final List<models.Category> categories;
+
+  @override
+  State<CategoriesList> createState() => _CategoriesListState();
+}
+
+class _CategoriesListState extends State<CategoriesList> {
+  String? selectedCity = 'Уфа'; // Перенесено в состояние
 
   @override
   Widget build(BuildContext context) {
@@ -157,9 +166,30 @@ class CategoriesList extends StatelessWidget {
                     fontSize: 24,
                   ),
                 ),
-                Text(
-                  "г. Уфа",
-                  style: TextStyle(color: Color.fromARGB(255, 255, 149, 43)),
+                DropdownButtonHideUnderline(
+                  // Убираем нижнюю линию
+                  child: DropdownButton<String>(
+                    value: selectedCity,
+                    isDense: true,
+                    icon: SizedBox.shrink(), // Убираем стрелку
+                    style: TextStyle(
+                      color: const Color.fromARGB(
+                          255, 255, 153, 29), // Цвет текста
+                      //fontSize: 16,
+                    ),
+                    dropdownColor: Colors.white, // Цвет фона меню
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedCity = newValue;
+                      });
+                    },
+                    items: [''].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ],
             ),
@@ -189,7 +219,7 @@ class CategoriesList extends StatelessWidget {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
               ),
-              itemCount: categories.length,
+              itemCount: widget.categories.length,
               itemBuilder: (context, index) {
                 return Center(
                   child: TextButton(
@@ -197,8 +227,11 @@ class CategoriesList extends StatelessWidget {
                     style: ButtonStyle(
                       padding: WidgetStatePropertyAll<EdgeInsets>(
                           EdgeInsets.all(15)),
-                      backgroundColor: WidgetStatePropertyAll<Color>(
-                          Color.fromARGB(255, 255, 250, 237)),
+                      backgroundColor: WidgetStatePropertyAll<Color>(index == 0
+                          ? Color.fromARGB(255, 120, 243, 109)
+                          : (index == 1
+                              ? Color.fromARGB(255, 255, 150, 44)
+                              : Color.fromARGB(255, 255, 250, 237))),
                       foregroundColor: WidgetStatePropertyAll<Color>(
                           Color.fromARGB(255, 0, 0, 0)),
                       shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
@@ -215,7 +248,7 @@ class CategoriesList extends StatelessWidget {
                           Container(
                             alignment: Alignment.topRight,
                             child: Image.network(
-                                categories[index].logo.toString()),
+                                widget.categories[index].logo.toString()),
                           ),
                           Container(
                             alignment: Alignment.bottomLeft,
@@ -223,7 +256,7 @@ class CategoriesList extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(categories[index].title.toString()),
+                                Text(widget.categories[index].title.toString()),
                                 Text("data")
                               ],
                             ),
