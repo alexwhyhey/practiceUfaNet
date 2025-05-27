@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, decorators, response, status
 from partners.models import *
 from .serializers import *
 
@@ -9,6 +9,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
 
     permission_classes = [permissions.IsAuthenticated]
+
+    @decorators.action(detail=True, methods=['get'], url_path='offers')
+    def get_offers(self, request, pk=None):
+        category = self.get_object()
+        category_tags = CategoryTag.objects.filter(category=category).values_list('tag', flat=True)
+        offers = Offer.objects.filter(offertag__tag__in=category_tags).distinct()
+        
+        serializer = OfferSerializer(offers, many=True, context={'request': request})
+        return response.Response(serializer.data, status=status.HTTP_200_OK)
 
 class CityViewSet(viewsets.ModelViewSet):
     queryset = City.objects.all()

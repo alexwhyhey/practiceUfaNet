@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:practice_baibakov/auth/auth.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'models.dart' as models;
 import 'settings.dart' as settings;
 
@@ -80,7 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               return const Center(
                                   child: Text('An error has occurred!'));
                             } else if (snapshot.hasData) {
-                              return CategoriesList(categories: snapshot.data!);
+                              return CategoriesList(
+                                categories: snapshot.data!,
+                              );
                             } else {
                               return const Center(
                                   child: CircularProgressIndicator());
@@ -193,12 +196,49 @@ class CategoriesList extends StatelessWidget {
               itemBuilder: (context, index) {
                 return Center(
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      final Future<List<models.Offer>> offerByCtg =
+                          models.ApiService.fetchOffersByCategory(
+                              categories[index].id);
+
+                      showModalBottomSheet(
+                        backgroundColor: Color.fromARGB(255, 0, 26, 75),
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (context) => DraggableScrollableSheet(
+                          expand: false,
+                          initialChildSize: 0.9,
+                          maxChildSize: 1.0,
+                          minChildSize: 0.3,
+                          builder: (_, controller) =>
+                              FutureBuilder<List<models.Offer>>(
+                            future: offerByCtg,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError) {
+                                return const Center(
+                                    child: Text('An error has occurred!'));
+                              } else if (snapshot.hasData) {
+                                return OffersByCategory(
+                                  offers: snapshot.data!,
+                                  categoryName: categories[index].title,
+                                );
+                              } else {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    },
                     style: ButtonStyle(
                       padding: WidgetStatePropertyAll<EdgeInsets>(
                           EdgeInsets.all(15)),
-                      backgroundColor: WidgetStatePropertyAll<Color>(
-                          Color.fromARGB(255, 255, 250, 237)),
+                      backgroundColor: WidgetStatePropertyAll<Color>(index == 0
+                          ? Color.fromARGB(255, 89, 255, 23)
+                          : (index == 1
+                              ? Color.fromARGB(255, 255, 150, 38)
+                              : Color.fromARGB(255, 255, 250, 237))),
                       foregroundColor: WidgetStatePropertyAll<Color>(
                           Color.fromARGB(255, 0, 0, 0)),
                       shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
@@ -224,7 +264,27 @@ class CategoriesList extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(categories[index].title.toString()),
-                                Text("data")
+                                FutureBuilder<int>(
+                                  future:
+                                      models.ApiService.countOffersByCategory(
+                                          categories[index].id),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Text(
+                                          '...'); // Loading indicator
+                                    } else if (snapshot.hasError) {
+                                      return const Text(
+                                          '0'); // Fallback on error
+                                    } else {
+                                      return Text(
+                                        '${snapshot.data} offers',
+                                        style: TextStyle(
+                                            color: Color.fromARGB(74, 0, 0, 0)),
+                                      );
+                                    }
+                                  },
+                                ),
                               ],
                             ),
                           ),
@@ -239,6 +299,280 @@ class CategoriesList extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ---------------------------- OFFERS BY CATEGORY ----------------------------
+
+class OffersByCategory extends StatelessWidget {
+  const OffersByCategory(
+      {super.key, required this.offers, required this.categoryName});
+
+  final List<models.Offer> offers;
+  final String categoryName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(15),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsetsDirectional.symmetric(horizontal: 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  Icons.arrow_back,
+                  color: Color.fromARGB(255, 255, 250, 237),
+                ),
+                Text(
+                  categoryName,
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 255, 250, 237),
+                    fontSize: 24,
+                  ),
+                ),
+                Text(
+                  "",
+                  style: TextStyle(color: Color.fromARGB(255, 255, 149, 43)),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 1,
+              ),
+              itemCount: offers.length,
+              itemBuilder: (context, index) {
+                return Center(
+                  child: TextButton(
+                    onPressed: () {
+                      final Future<models.Offer> offer =
+                          models.ApiService.fetchOffer(offers[index].id);
+
+                      showModalBottomSheet(
+                        backgroundColor: Color.fromARGB(255, 17, 17, 17),
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (context) => DraggableScrollableSheet(
+                          expand: false,
+                          initialChildSize: 0.9,
+                          maxChildSize: 1.0,
+                          minChildSize: 0.3,
+                          builder: (_, controller) =>
+                              FutureBuilder<models.Offer>(
+                            future: offer,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError) {
+                                return const Center(
+                                    child: Text('An error has occurred!'));
+                              } else if (snapshot.hasData) {
+                                return OfferPage(
+                                  offer: snapshot.data!,
+                                );
+                              } else {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    style: ButtonStyle(
+                      padding: WidgetStatePropertyAll<EdgeInsets>(
+                          EdgeInsets.all(15)),
+                      backgroundColor: WidgetStatePropertyAll<Color>(
+                          Color.fromARGB(255, 255, 250, 237)),
+                      foregroundColor: WidgetStatePropertyAll<Color>(
+                          Color.fromARGB(255, 0, 0, 0)),
+                      shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      )),
+                      fixedSize:
+                          WidgetStatePropertyAll<Size>(Size.fromHeight(250.0)),
+                    ),
+                    child: Container(
+                      padding: EdgeInsetsDirectional.symmetric(vertical: 5),
+                      child: Column(
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                alignment: Alignment.topRight,
+                                child: Image.network(
+                                    height: 200,
+                                    offers[index].backImage.toString()),
+                              ),
+                              Container(
+                                alignment: Alignment.topLeft,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(offers[index]
+                                        .whatOfferAbout
+                                        .toString()),
+                                    Text(offers[index].whereToUse.toString()),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            color: Color.fromARGB(255, 60, 60, 60),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------- OFFERS BY CATEGORY ----------------------------
+
+class OfferPage extends StatelessWidget {
+  const OfferPage({super.key, required this.offer});
+
+  final models.Offer offer;
+
+  Future<void> _launchUrl(String url) async {
+    if (!await launchUrl(Uri.parse(url))) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            color: Color.fromARGB(255, 212, 212, 212),
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    Container(
+                      alignment: Alignment.topLeft,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            offer.whatOfferAbout.toString(),
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 18, 18, 18)),
+                          ),
+                          Text(
+                            offer.whereToUse.toString(),
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 18, 18, 18)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: Image.network(
+                        offer.backImage.toString(),
+                        height: 250,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.network(
+                  offer.partner.logo.toString(),
+                  height: 50,
+                ),
+                Text(
+                  offer.partner.title.toString(),
+                  style: TextStyle(color: Color.fromARGB(255, 202, 202, 202)),
+                ),
+              ],
+            ),
+          ),
+          CupertinoButton(
+            color: Color.fromARGB(218, 255, 112, 11),
+            onPressed: () => _launchUrl(offer.url.toString()),
+            child: Text(
+              offer.buttonName.toString(),
+              style: TextStyle(color: Color.fromARGB(255, 18, 18, 18)),
+            ),
+          ),
+          Container(
+              child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Подробнее",
+                style: TextStyle(color: Color.fromARGB(102, 171, 171, 171)),
+              ),
+              Container(
+                color: Color.fromARGB(255, 48, 48, 48),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Как получить"),
+                          Text(offer.howToGet.toString()),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Срок действия"),
+                          Text(
+                              "${offer.startDate.toString()} - ${offer.endDate.toString()}"),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("О партнере"),
+                          Text(offer.partner.about.toString()),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ))
+        ]);
   }
 }
 

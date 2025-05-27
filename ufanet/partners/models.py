@@ -7,7 +7,7 @@ class Category(models.Model):
     logo = models.ImageField(blank=True, null=True, upload_to='categories/%Y/')
 
     class Meta:
-        ordering = ['title']
+        ordering = ['id', 'title']
         verbose_name_plural = 'Categories'
 
     def __str__(self):
@@ -21,7 +21,7 @@ class City(models.Model):
 
     class Meta:
         verbose_name_plural = 'Cities'
-        ordering = ['country', 'name']
+        ordering = ['id', 'country', 'name']
 
     def __str__(self):
         return f'{self.country}, г. {self.name}{f' ({self.region})' if self.region else ''}'
@@ -33,7 +33,7 @@ class Partner(models.Model):
     about = models.TextField(max_length=600)
 
     class Meta:
-        ordering = ['title']
+        ordering = ['id', 'title']
 
     def __str__(self):
         return self.title
@@ -63,7 +63,7 @@ class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ['id', 'name']
 
     def __str__(self):
         return self.name
@@ -74,7 +74,7 @@ class OfferTag(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ['offer', 'tag']
+        unique_together = ['id', 'offer', 'tag']
 
     def __str__(self):
         return f'{self.offer.what_offer_about}: {self.offer.where_to_use} - {self.tag}'
@@ -85,7 +85,7 @@ class CategoryTag(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ['category', 'tag']
+        unique_together = ['id', 'category', 'tag']
 
     def __str__(self):
         return f'{self.category.title} - {self.tag}'

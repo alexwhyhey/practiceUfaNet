@@ -91,6 +91,43 @@ class ApiService {
 
     return compute(parseOffers, response.body);
   }
+
+  static Future<Offer> fetchOffer(int id) async {
+    final response = await _makeRequest(() async {
+      final token = await SecureTokenStorage.getToken();
+      return _client.get(
+        Uri.parse('${settings.host}/api/offers/$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+    });
+
+    return compute(parseOffer, response.body);
+  }
+
+  // Добавьте этот метод в класс ApiService
+  static Future<List<Offer>> fetchOffersByCategory(int categoryId) async {
+    final response = await _makeRequest(() async {
+      final token = await SecureTokenStorage.getToken();
+      return _client.get(
+        Uri.parse('${settings.host}/api/categories/$categoryId/offers/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+    });
+
+    return compute(parseOffers, response.body);
+  }
+
+  // In your ApiService class
+  static Future<int> countOffersByCategory(int categoryId) async {
+    final offers = await fetchOffersByCategory(categoryId);
+    return offers.length;
+  }
 }
 
 List<Category> parseCategories(String responseBody) {
@@ -98,6 +135,11 @@ List<Category> parseCategories(String responseBody) {
       (jsonDecode(responseBody) as List).cast<Map<String, dynamic>>();
 
   return parsed.map<Category>((json) => Category.fromJson(json)).toList();
+}
+
+Offer parseOffer(String responseBody) {
+  final parsed = jsonDecode(responseBody) as Map<String, dynamic>;
+  return Offer.fromJson(parsed);
 }
 
 // A function that converts a response body into a List<Photo>.
@@ -118,7 +160,7 @@ class Offer {
   final String url;
   final String whatOfferAbout;
   final String whereToUse;
-  final String backImage;
+  final String? backImage;
   final String howToGet;
   final DateTime startDate;
   final DateTime endDate;
@@ -131,7 +173,7 @@ class Offer {
     required this.url,
     required this.whatOfferAbout,
     required this.whereToUse,
-    required this.backImage,
+    this.backImage,
     required this.howToGet,
     required this.startDate,
     required this.endDate,
@@ -146,10 +188,10 @@ class Offer {
       url: json['url'] as String,
       whatOfferAbout: json['what_offer_about'] as String,
       whereToUse: json['where_to_use'] as String,
-      backImage: json['back_image'] as String,
+      backImage: json['back_image'] as String?,
       howToGet: json['how_to_get'] as String,
-      startDate: json['start_date'] as DateTime,
-      endDate: json['end_date'] as DateTime,
+      startDate: DateTime.parse(json['start_date'] as String),
+      endDate: DateTime.parse(json['end_date'] as String),
     );
   }
 }
@@ -193,9 +235,9 @@ class City {
   factory City.fromJson(Map<String, dynamic> json) {
     return City(
       id: json['id'] as int,
-      name: json['title'] as String,
-      country: json['logo'] as String,
-      region: json['about'] as String,
+      name: json['name'] as String,
+      country: json['country'] as String,
+      region: json['region'] as String,
     );
   }
 }
