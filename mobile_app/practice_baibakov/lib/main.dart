@@ -149,9 +149,15 @@ class CategoriesList extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.arrow_back,
-                  color: Color.fromARGB(255, 255, 250, 237),
+                CupertinoButton(
+                  color: Color.fromARGB(0, 0, 0, 0),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Icon(
+                    Icons.arrow_back,
+                    color: Color.fromARGB(255, 255, 250, 237),
+                  ),
                 ),
                 Text(
                   "Скидки от партнеров",
@@ -323,9 +329,15 @@ class OffersByCategory extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.arrow_back,
-                  color: Color.fromARGB(255, 255, 250, 237),
+                CupertinoButton(
+                  color: Color.fromARGB(0, 0, 0, 0),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Icon(
+                    Icons.arrow_back,
+                    color: Color.fromARGB(255, 255, 250, 237),
+                  ),
                 ),
                 Text(
                   categoryName,
@@ -492,6 +504,21 @@ class OfferPage extends StatelessWidget {
                         height: 250,
                       ),
                     ),
+                    Container(
+                      padding: EdgeInsets.all(15),
+                      alignment: Alignment.topRight,
+                      child: CupertinoButton(
+                        color: Color.fromARGB(0, 0, 0, 0),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          "Закрыть",
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 255, 127, 22)),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -518,7 +545,7 @@ class OfferPage extends StatelessWidget {
             onPressed: () => _launchUrl(offer.url.toString()),
             child: Text(
               offer.buttonName.toString(),
-              style: TextStyle(color: Color.fromARGB(255, 18, 18, 18)),
+              style: TextStyle(color: Color.fromARGB(255, 211, 211, 211)),
             ),
           ),
           Container(
@@ -531,7 +558,6 @@ class OfferPage extends StatelessWidget {
                 style: TextStyle(color: Color.fromARGB(102, 171, 171, 171)),
               ),
               Container(
-                color: Color.fromARGB(255, 48, 48, 48),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -541,19 +567,18 @@ class OfferPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Как получить"),
-                          Text(offer.howToGet.toString()),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Срок действия"),
                           Text(
-                              "${offer.startDate.toString()} - ${offer.endDate.toString()}"),
+                            "Как получить",
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Color.fromARGB(227, 238, 238, 238)),
+                          ),
+                          Text(
+                            offer.howToGet.toString(),
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Color.fromARGB(227, 238, 238, 238)),
+                          ),
                         ],
                       ),
                     ),
@@ -562,8 +587,38 @@ class OfferPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("О партнере"),
-                          Text(offer.partner.about.toString()),
+                          Text(
+                            "Срок действия",
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Color.fromARGB(227, 238, 238, 238)),
+                          ),
+                          Text(
+                            "${offer.startDate.toString()} - ${offer.endDate.toString()}",
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Color.fromARGB(227, 238, 238, 238)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "О партнере",
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Color.fromARGB(227, 238, 238, 238)),
+                          ),
+                          Text(
+                            offer.partner.about.toString(),
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Color.fromARGB(227, 238, 238, 238)),
+                          ),
                         ],
                       ),
                     ),
